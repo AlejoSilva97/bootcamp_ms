@@ -94,4 +94,21 @@ public class BootcampPersistenceAdapter implements BootcampPersistencePort {
                     return bootcampEntityMapper.toModel(entity, capacities);
                 });
     }
+
+    @Override
+    public Mono<Boolean> existsById(Long id) {
+        return bootcampRepository.existsById(id);
+    }
+
+    @Override
+    public Flux<Long> findOrphanCapacityIds(Long bootcampId) {
+        return bootcampCapacityRepository.findOrphanCapacityIds(bootcampId);
+    }
+
+    @Override
+    @Transactional
+    public Mono<Void> deleteById(Long id) {
+        return bootcampCapacityRepository.deleteByIdBootcamp(id)
+                .then(bootcampRepository.deleteById(id));
+    }
 }

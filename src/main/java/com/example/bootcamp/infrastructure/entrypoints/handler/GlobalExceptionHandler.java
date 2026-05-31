@@ -53,6 +53,11 @@ public class GlobalExceptionHandler extends AbstractErrorWebExceptionHandler {
             return buildErrorDTO(HttpStatus.NOT_FOUND, Constants.CAPACITY_NOT_FOUND_CODE, capacityNotFoundException.getMessage());
         }
 
+        if (error instanceof BootcampNotFoundException bootcampNotFoundException) {
+            log.warn("Business rule violation: {}", bootcampNotFoundException.getMessage());
+            return buildErrorDTO(HttpStatus.NOT_FOUND, Constants.BOOTCAMP_NOT_FOUND_CODE, bootcampNotFoundException.getMessage());
+        }
+
         log.error("Unexpected system error: ", error);
         return buildErrorDTO(HttpStatus.INTERNAL_SERVER_ERROR, Constants.INTERNAL_ERROR_CODE, Constants.INTERNAL_ERROR);
     }

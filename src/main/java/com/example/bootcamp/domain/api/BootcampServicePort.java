@@ -8,4 +8,5 @@ import reactor.core.publisher.Mono;
 public interface BootcampServicePort {
     Mono<Bootcamp> registerBootcamp(Bootcamp bootcamp);
     Flux<Bootcamp> getAllBootcamps(PaginationParams params);
+    Mono<Void> deleteById(Long id);
 }

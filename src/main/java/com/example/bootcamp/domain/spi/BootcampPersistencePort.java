@@ -11,4 +11,7 @@ public interface BootcampPersistencePort {
     Mono<Bootcamp> save(Bootcamp bootcamp);
     Mono<Boolean> existByName(String name);
     Flux<Bootcamp> findAll(PaginationParams params);
+    Mono<Void> deleteById(Long id);
+    Flux<Long> findOrphanCapacityIds(Long bootcampId);
+    Mono<Boolean> existsById(Long id);
 }

@@ -3,6 +3,7 @@ package com.example.bootcamp.domain.usecase;
 import com.example.bootcamp.domain.api.BootcampServicePort;
 import com.example.bootcamp.domain.constants.Constants;
 import com.example.bootcamp.domain.exceptions.BootcampAlreadyExistsException;
+import com.example.bootcamp.domain.exceptions.BootcampNotFoundException;
 import com.example.bootcamp.domain.exceptions.CapacityNotFoundException;
 import com.example.bootcamp.domain.model.Bootcamp;
 import com.example.bootcamp.domain.model.Capacity;
@@ -83,5 +84,25 @@ public class BootcampUseCase implements BootcampServicePort {
                             bootcamp.duration(),
                             enrichedCapacities);
                 });
+    }
+
+    @Override
+    public Mono<Void> deleteById(Long id) {
+        return bootcampPersistencePort.existsById(id)
+                .flatMap(exists -> {
+                    if (!exists) {
+                        return Mono.error(new BootcampNotFoundException(String.format(Constants.BOOTCAMP_NOT_FOUND, id)));
+                    }
+                    return bootcampPersistencePort.findOrphanCapacityIds(id).collectList();
+                })
+                .flatMap(orphanCapacityIds ->
+                        bootcampPersistencePort.deleteById(id)
+                                .then(Mono.defer(() -> {
+                                    if (orphanCapacityIds.isEmpty()) {
+                                        return Mono.empty();
+                                    }
+                                    return capacityExternalService.deleteCapacitiesByIds(orphanCapacityIds);
+                                }))
+                );
     }
 }

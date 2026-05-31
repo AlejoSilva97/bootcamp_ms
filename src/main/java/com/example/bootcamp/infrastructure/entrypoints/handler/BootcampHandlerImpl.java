@@ -49,4 +49,10 @@ public class BootcampHandlerImpl {
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(list));
     }
+
+    public Mono<ServerResponse> deleteBootcamp(ServerRequest request) {
+        Long id = Long.valueOf(request.pathVariable("id"));
+        return bootcampServicePort.deleteById(id)
+                .then(ServerResponse.noContent().build());
+    }
 }

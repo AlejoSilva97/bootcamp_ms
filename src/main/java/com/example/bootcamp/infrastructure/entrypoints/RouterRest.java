@@ -19,8 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
-import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
-import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
+import static org.springframework.web.reactive.function.server.RequestPredicates.*;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @Configuration
@@ -77,10 +76,29 @@ public class RouterRest {
                                     @ApiResponse(responseCode = "400", description = "Parámetros de consulta inválidos o con formato incorrecto")
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/bootcamps/{id}",
+                    method = RequestMethod.DELETE,
+                    beanClass = BootcampHandlerImpl.class,
+                    beanMethod = "deleteBootcamp",
+                    operation = @Operation(
+                            summary = "Eliminar un bootcamp por ID y sus capacidades huérfanas",
+                            description = "Elimina un bootcamp de forma transaccional junto con sus relaciones y desencadena de manera reactiva la eliminación en cascada de sus capacidades y tecnologías asociadas si no pertenecen a ningún otro recurso.",
+                            operationId = "deleteBootcamp",
+                            parameters = {
+                                    @Parameter(name = "id", in = ParameterIn.PATH, description = "ID del bootcamp a eliminar", required = true, schema = @Schema(type = "integer"))
+                            },
+                            responses = {
+                                    @ApiResponse(responseCode = "204", description = "Bootcamp y sus dependencias huérfanas eliminados con éxito"),
+                                    @ApiResponse(responseCode = "404", description = "El bootcamp con el ID provisto no existe")
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> routerFunction(BootcampHandlerImpl bootcampHandler) {
         return route(POST("/bootcamps"), bootcampHandler::createBootcamp)
-                .andRoute(GET("/bootcamps"), bootcampHandler::getAllBootcamps);
+                .andRoute(GET("/bootcamps"), bootcampHandler::getAllBootcamps)
+                .andRoute(DELETE("/bootcamps/{id}"), bootcampHandler::deleteBootcamp);
     }
 }
