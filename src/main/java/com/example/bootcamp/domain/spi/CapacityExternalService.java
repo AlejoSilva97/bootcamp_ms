@@ -9,4 +9,5 @@ import java.util.List;
 public interface CapacityExternalService {
     Mono<Boolean> verifyCapacitiesByIds(List<Long> ids);
     Flux<Capacity> getCapacitiesByIds(List<Long> ids);
+    Mono<Void> deleteCapacitiesByIds(List<Long> ids);
 }
