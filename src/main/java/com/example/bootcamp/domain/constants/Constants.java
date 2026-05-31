@@ -18,4 +18,7 @@ public class Constants {
     public static final String INTERNAL_ERROR = "Something went wrong, please try again";
     public static final String SUCCESS_REQUESTED_DELETION = "Successfully requested deletion of external orphan capacities: {}";
     public static final String CAPACITIES_COULD_NOT_BE_DELETED = "Capacities could not be deleted externally or were already removed: {}";
+    public static final String IDS_PARAMETER_REQUIRED = "The 'ids' query parameter is required and cannot be empty.";
+    public static final String IDS_PARAMETER_INVALID = "The 'ids' query parameter must contain only numbers separated by commas.";
+    public static final String BOOTCAMPS_NOT_FOUND = "One or more of the requested bootcamps do not exist.";
 }

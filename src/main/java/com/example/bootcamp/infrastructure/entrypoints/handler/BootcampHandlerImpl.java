@@ -2,6 +2,7 @@ package com.example.bootcamp.infrastructure.entrypoints.handler;
 
 import com.example.bootcamp.domain.api.BootcampServicePort;
 import com.example.bootcamp.domain.constants.Constants;
+import com.example.bootcamp.domain.exceptions.InvalidFieldException;
 import com.example.bootcamp.domain.model.PaginationParams;
 import com.example.bootcamp.infrastructure.entrypoints.dto.BootcampRequestDTO;
 import com.example.bootcamp.infrastructure.entrypoints.mapper.BootcampMapper;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -54,5 +57,29 @@ public class BootcampHandlerImpl {
         Long id = Long.valueOf(request.pathVariable("id"));
         return bootcampServicePort.deleteById(id)
                 .then(ServerResponse.noContent().build());
+    }
+
+    public Mono<ServerResponse> getBootcampsByIds(ServerRequest request) {
+        return extractAndParseIds(request)
+                .flatMapMany(bootcampServicePort::getBootcampsByIds)
+                .map(bootcampMapper::toResponseDTO)
+                .collectList()
+                .flatMap(list -> ServerResponse
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(list));
+    }
+
+    private Mono<List<Long>> extractAndParseIds(ServerRequest request) {
+        return Mono.justOrEmpty(request.queryParams().get("ids"))
+                .filter(idsParam -> !idsParam.isEmpty() && !idsParam.get(0).isBlank())
+                .switchIfEmpty(Mono.error(new InvalidFieldException(Constants.IDS_PARAMETER_REQUIRED)))
+                .map(idsParam -> idsParam.stream()
+                        .flatMap(s -> java.util.Arrays.stream(s.split(",")))
+                        .map(String::trim)
+                        .map(Long::valueOf)
+                        .toList())
+                .onErrorMap(NumberFormatException.class, e ->
+                        new InvalidFieldException(Constants.IDS_PARAMETER_INVALID));
     }
 }

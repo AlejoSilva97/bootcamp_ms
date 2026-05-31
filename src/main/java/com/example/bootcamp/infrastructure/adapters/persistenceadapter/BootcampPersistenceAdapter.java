@@ -111,4 +111,17 @@ public class BootcampPersistenceAdapter implements BootcampPersistencePort {
         return bootcampCapacityRepository.deleteByIdBootcamp(id)
                 .then(bootcampRepository.deleteById(id));
     }
+
+    @Override
+    public Flux<Bootcamp> findAllByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Flux.empty();
+        }
+
+        return bootcampRepository.findAllById(ids)
+                .collectList()
+                .filter(entities -> !entities.isEmpty())
+                .flatMapMany(this::enrichEntitiesWithRelations)
+                .switchIfEmpty(Flux.empty());
+    }
 }

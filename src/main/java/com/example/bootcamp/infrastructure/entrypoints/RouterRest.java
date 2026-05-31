@@ -94,11 +94,34 @@ public class RouterRest {
                                     @ApiResponse(responseCode = "404", description = "El bootcamp con el ID provisto no existe")
                             }
                     )
+            ),
+            @RouterOperation(
+                    path = "/bootcamps/bulk",
+                    method = RequestMethod.GET,
+                    beanClass = BootcampHandlerImpl.class,
+                    beanMethod = "getBootcampsByIds",
+                    operation = @Operation(
+                            summary = "Obtener bootcamps por lote de IDs de forma enriquecida",
+                            description = "Recibe una lista de IDs de bootcamps por parámetro de consulta, obtiene su información local y la enriquece de forma síncrona con sus capacidades y tecnologías del servicio externo. No aplica paginación.",
+                            operationId = "getBootcampsByIds",
+                            parameters = {
+                                    @Parameter(name = "ids", in = ParameterIn.QUERY, description = "Lista de IDs de los bootcamps separados por comas (ej. 1,2,3)", required = true, schema = @Schema(type = "string"))
+                            },
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Colección de bootcamps solicitados obtenida y enriquecida con éxito",
+                                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = BootcampResponseDTO.class)))
+                                    ),
+                                    @ApiResponse(responseCode = "400", description = "El parámetro 'ids' no fue enviado o posee un formato inválido")
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> routerFunction(BootcampHandlerImpl bootcampHandler) {
         return route(POST("/bootcamps"), bootcampHandler::createBootcamp)
                 .andRoute(GET("/bootcamps"), bootcampHandler::getAllBootcamps)
-                .andRoute(DELETE("/bootcamps/{id}"), bootcampHandler::deleteBootcamp);
+                .andRoute(DELETE("/bootcamps/{id}"), bootcampHandler::deleteBootcamp)
+                .andRoute(GET("/bootcamps/bulk"), bootcampHandler::getBootcampsByIds);
     }
 }
