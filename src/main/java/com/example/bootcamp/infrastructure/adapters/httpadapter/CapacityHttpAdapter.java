@@ -1,8 +1,12 @@
 package com.example.bootcamp.infrastructure.adapters.httpadapter;
 
+import com.example.bootcamp.domain.model.Capacity;
+import com.example.bootcamp.domain.model.Technology;
 import com.example.bootcamp.domain.spi.CapacityExternalService;
+import com.example.bootcamp.infrastructure.adapters.httpadapter.dto.ExternalCapacityDTO;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -34,5 +38,39 @@ public class CapacityHttpAdapter implements CapacityExternalService {
                         .build())
                 .retrieve()
                 .bodyToMono(Boolean.class);
+    }
+
+    @Override
+    public Flux<Capacity> getCapacitiesByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Flux.empty();
+        }
+
+        String idsParam = ids.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
+
+        return capacityWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/capacities/bulk")
+                        .queryParam("ids", idsParam)
+                        .build())
+                .retrieve()
+                .bodyToFlux(ExternalCapacityDTO.class)
+                .map(this::mapToDomain);
+    }
+
+    private Capacity mapToDomain(ExternalCapacityDTO dto) {
+        List<Technology> domainTechnologies = dto.technologies() == null
+                ? List.of()
+                : dto.technologies().stream()
+                .map(techDto -> new Technology(techDto.id(), techDto.name()))
+                .toList();
+
+        return new Capacity(
+                dto.id(),
+                dto.name(),
+                domainTechnologies
+        );
     }
 }
