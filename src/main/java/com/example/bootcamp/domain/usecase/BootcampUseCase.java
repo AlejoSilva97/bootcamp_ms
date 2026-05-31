@@ -105,4 +105,22 @@ public class BootcampUseCase implements BootcampServicePort {
                                 }))
                 );
     }
+
+    @Override
+    public Flux<Bootcamp> getBootcampsByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Flux.empty();
+        }
+
+        List<Long> uniqueIds = ids.stream().distinct().toList();
+
+        return bootcampPersistencePort.findAllByIds(uniqueIds)
+                .collectList()
+                .flatMapMany(bootcamps -> {
+                    if (bootcamps.size() != uniqueIds.size()) {
+                        return Mono.error(new BootcampNotFoundException(Constants.BOOTCAMPS_NOT_FOUND));
+                    }
+                    return enrichBootcampsWithCapacities(bootcamps);
+                });
+    }
 }

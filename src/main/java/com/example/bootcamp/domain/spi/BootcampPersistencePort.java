@@ -14,4 +14,5 @@ public interface BootcampPersistencePort {
     Mono<Void> deleteById(Long id);
     Flux<Long> findOrphanCapacityIds(Long bootcampId);
     Mono<Boolean> existsById(Long id);
+    Flux<Bootcamp> findAllByIds(List<Long> ids);
 }
