@@ -16,7 +16,6 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface BootcampMapper {
 
-    // --- MAPEO DE ENTRADA (Request -> Dominio) ---
     @Mapping(target = "id", ignore = true)
     @Mapping(source = "capacityIds", target = "capacities", qualifiedByName = "idsToCapacities")
     Bootcamp toModel(BootcampRequestDTO dto);
@@ -29,14 +28,11 @@ public interface BootcampMapper {
                 .toList();
     }
 
-    // --- MAPEO DE SALIDA (Dominio -> Response) ---
-    // MapStruct detectará automáticamente las listas anidadas gracias a los métodos de abajo
     BootcampResponseDTO toResponseDTO(Bootcamp bootcamp);
 
     CapacityResponseDTO toCapacityResponseDTO(Capacity capacity);
 
-    // Dentro de BootcampMapper.java
-    @Mapping(source = "id", target = "id") // Ajusta el 'source' si en tu dominio se llama diferente
+    @Mapping(source = "id", target = "id")
     @Mapping(source = "name", target = "name")
     TechnologyResponseDTO toTechnologyResponseDTO(Technology technology);
 }
